@@ -1,0 +1,64 @@
+---
+- hosts: all 
+  become: true
+  gather_facts: no
+  tasks:
+      # wait for system to become reachable, our pipline was timing out 
+    - name: "wait for the system to become reachable"
+      wait_for_connection:
+    - name: "gather facts for first time"
+      setup:
+    # install docker dependencies
+    - name: "Install docker dependencies"
+      apt:
+        update_cache: yes
+        pkg:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+        - python3
+        - python3-pip
+    # add gpg key, validates integrity of software before install 
+    - name: "add gpg key"
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: "add repo"
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+    # install docker engine
+    - name: "Install docker engine"
+      apt:
+        pkg:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+    # install docker with pip 
+    - name: "Install with pip"
+      pip:
+        name:
+          - docker
+          - jsondiff
+        executable: pip3
+    # install nginx
+    - name: "install nginx"
+      shell: apt install -y nginx
+    # install java
+    - name: "install java"
+      shell: apt install -y openjdk-11-jre-headless
+    # install node
+    - name: "install node"
+      shell: apt install -y nodejs
+    # clone github repo
+    - name: clone repo
+      git:
+        repo: https://github.com/Adamcoakley/team-magenta-group-two.git
+        dest: /home/ubuntu/repo
+        clone: yes
+        update: yes
+
+
+      
